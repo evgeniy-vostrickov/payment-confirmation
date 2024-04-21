@@ -1,6 +1,5 @@
-export type TPaymentModal = {
+export interface TPaymentModal {
   isModalOpen: boolean
-  setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>
   textModal: string
-  setTimer: React.Dispatch<React.SetStateAction<{ minutes: number }>>
+  handleRepeatForm: () => void
 }

@@ -1,21 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Typography } from 'antd'
-import { convertMinutesToSeconds, convertTimeToString, getCurrentTime, getMinutes, getSeconds } from '../helpers/workWithTime'
+import { convertMinutesToSeconds, convertTimeToString, displayTime, getCurrentTime } from '../helpers/workWithTime'
 import { TPaymentTimer } from '../types/TPaymentTimer'
 
 const { Title } = Typography
 
-const PaymentTimer: React.FC<TPaymentTimer> = ({ timerStartTime, setIsModalOpen, setTextModal }) => {
+const PaymentTimer: React.FC<TPaymentTimer> = ({ isTimerStart, timerStartTime, setIsModalOpen, setTextModal }) => {
   const [currentTime, setCurrentTime] = useState({ minutes: convertTimeToString(timerStartTime.minutes), seconds: convertTimeToString(0) })
   const time = useRef<number>()
   const timer = useRef<number>()
 
   const handlerTimer = () => {
     let currentTime = time.current! - 1
-
-    let minutes = convertTimeToString(getMinutes(currentTime))
-    let seconds = convertTimeToString(getSeconds(currentTime))
-
+    let [minutes, seconds] = getCurrentTime(currentTime)
     setCurrentTime({ minutes, seconds })
     
     if (currentTime === 0) {
@@ -28,22 +25,22 @@ const PaymentTimer: React.FC<TPaymentTimer> = ({ timerStartTime, setIsModalOpen,
   }
 
   useEffect(() => {
-    time.current = convertMinutesToSeconds(timerStartTime.minutes)
-    
-    const idInterval = window.setInterval(() => {
-      handlerTimer()
-    }, 1000)
-    
-    timer.current = idInterval
+    if (!isTimerStart) {
+      clearInterval(timer.current)
+    } else {
+      time.current = convertMinutesToSeconds(timerStartTime.minutes)
+      let idInterval = window.setInterval(handlerTimer, 1000)
+      timer.current = idInterval
+    }
 
     return () => {
       clearInterval(timer.current)
     }
-  }, [timerStartTime])
+  }, [timerStartTime, isTimerStart])
 
   return (
     <Title className='title'>
-      Код действует {getCurrentTime(currentTime)}
+      Код действует {displayTime(currentTime)}
     </Title>
   )
 }

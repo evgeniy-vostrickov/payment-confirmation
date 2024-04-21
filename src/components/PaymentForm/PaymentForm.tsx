@@ -1,62 +1,67 @@
-import React from 'react'
-import type { GetProp } from 'antd'
+import React, { useState } from 'react'
 import type { FormProps } from 'antd'
 import { Button, Checkbox, Form, Input } from 'antd'
+import type { CheckboxProps } from 'antd'
+import { FieldsType, TPaymentForm } from '../types/TPaymentForm'
 
-type FieldType = {
-  num1?: number
-  num2?: number
-  num3?: number
-  num4?: number
-  isEmail?: boolean
-  email?: string
-}
-
-const PaymentForm: React.FC = () => {
-  const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
-    console.log('Success:', values)
+const PaymentForm: React.FC<TPaymentForm> = ({ form, setTextModal, openModal, setCorrectCode }) => {
+  const [isinputEmail, setIsinputEmail] = useState(false)
+  const onFinish: FormProps<FieldsType>['onFinish'] = (dataForm) => {
+    // Запрос на сервер
+    if (dataForm.code === '5432') {
+      setTextModal('Данные успешно отправлены!')
+      openModal()
+      setCorrectCode(true)
+    } else {
+      setTextModal('Некорректный СМС-код!')
+      openModal()
+    }
+    console.log('Success:', dataForm)
   }
 
-  const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
+  const onFinishFailed: FormProps<FieldsType>['onFinishFailed'] = (errorInfo) => {
+    setTextModal('Некорректный ввод даннх!')
+    openModal()
     console.log('Failed:', errorInfo)
   }
 
-  const onChange: GetProp<typeof Input.OTP, 'onChange'> = (text) => {
-    console.log('onChange:', text)
+  const onChangeCheckbox: CheckboxProps['onChange'] = (event) => {
+    setIsinputEmail(event.target.checked)
   }
 
   return (
     <Form
       name="basic"
+      form={form}
       labelCol={{ md: { span: 8 }, sm: { span: 10 } }}
       wrapperCol={{ md: { span: 15, offset: 1 }, sm: { span: 13, offset: 1 } }}
-      initialValues={{ remember: true }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
       autoComplete="off"
       className='payment__form'
     >
-      <Form.Item<FieldType>
-        name="num1"
+      <Form.Item<FieldsType>
+        name="code"
         label="Код подтверждения"
-        rules={[{ required: true, message: 'Please input your num1!' }]}
+        rules={[{ required: true, message: 'Код содержит 4 цифры!' }, { pattern: new RegExp('^\\d+$'), message: 'Код содержит только цифры!' }]}
       >
-        <Input.OTP length={4} size={'large'} variant={'filled'} onChange={onChange} />
+        <Input.OTP length={4} size={'large'} variant={'filled'} />
       </Form.Item>
 
-      <Form.Item<FieldType>
+      <Form.Item<FieldsType>
         name="isEmail"
         valuePropName="checked"
-        labelAlign="right"
         wrapperCol={{ md: { span: 16, offset: 9 }, sm: { span: 13, offset: 11 } }}
       >
-        <Checkbox>Отправить чек</Checkbox>
+        <Checkbox onChange={onChangeCheckbox}>Отправить чек</Checkbox>
       </Form.Item>
 
-      <Form.Item<FieldType>
+      <Form.Item<FieldsType>
         name="email"
         label="Email"
-        rules={[{ required: true, type: 'email', message: 'Please input your email!' }]}
+        hidden={!isinputEmail}
+        rules={[{ required: isinputEmail, type: 'email', message: 'Пожалуйста введите email!' }]}
+        hasFeedback
       >
         <Input />
       </Form.Item>
