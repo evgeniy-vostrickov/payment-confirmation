@@ -1,5 +1,10 @@
+interface modalSetings {
+  textModal: string
+  textButton: string
+}
+
 export interface TPaymentModal {
   isModalOpen: boolean
-  textModal: string
-  handleRepeatForm: () => void
+  configModal: modalSetings
+  handleButton: () => void
 }

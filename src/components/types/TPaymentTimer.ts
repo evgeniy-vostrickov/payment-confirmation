@@ -1,6 +1,5 @@
 export type TPaymentTimer = {
-  setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>
-  setTextModal: React.Dispatch<React.SetStateAction<string>>
+  openModal: (textModal: string, textButton: string) => void
   timerStartTime: { minutes: number }
   isTimerStart: boolean
 }

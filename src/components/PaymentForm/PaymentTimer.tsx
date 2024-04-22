@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { memo, useEffect, useRef, useState } from 'react'
 import { Typography } from 'antd'
 import { convertMinutesToSeconds, convertTimeToString, displayTime, getCurrentTime } from '../helpers/workWithTime'
 import { TPaymentTimer } from '../types/TPaymentTimer'
 
 const { Title } = Typography
 
-const PaymentTimer: React.FC<TPaymentTimer> = ({ isTimerStart, timerStartTime, setIsModalOpen, setTextModal }) => {
+const PaymentTimer: React.FC<TPaymentTimer> = memo(({ isTimerStart, timerStartTime, openModal }) => {
   const [currentTime, setCurrentTime] = useState({ minutes: convertTimeToString(timerStartTime.minutes), seconds: convertTimeToString(0) })
   const time = useRef<number>()
   const timer = useRef<number>()
@@ -16,8 +16,7 @@ const PaymentTimer: React.FC<TPaymentTimer> = ({ isTimerStart, timerStartTime, s
     setCurrentTime({ minutes, seconds })
     
     if (currentTime === 0) {
-      setIsModalOpen(true)
-      setTextModal('Время закончилось!')
+      openModal('Время закончилось!', 'Попробовать снова')
       clearInterval(timer.current)
     }
     
@@ -40,9 +39,9 @@ const PaymentTimer: React.FC<TPaymentTimer> = ({ isTimerStart, timerStartTime, s
 
   return (
     <Title className='title'>
-      Код действует {displayTime(currentTime)}
+      Код действует <span className='title__underline'>{displayTime(currentTime)}</span>
     </Title>
   )
-}
+})
 
 export default PaymentTimer

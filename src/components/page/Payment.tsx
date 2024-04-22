@@ -1,49 +1,47 @@
-import React, { useEffect, useState } from 'react'
+import React, { memo, useCallback, useState } from 'react'
 import { Card, Form, Typography } from 'antd'
 import PaymentForm from '../PaymentForm/PaymentForm'
 import PaymentTimer from '../PaymentForm/PaymentTimer'
 import PaymentModal from '../PaymentForm/PaymentModal'
 import { FieldsType } from '../types/TPaymentForm'
+import { IPayment } from '../types/IPayment'
 
 const { Title } = Typography
 
-const Payment: React.FC = () => {
+const Payment: React.FC<IPayment> = memo(({ timeOnTimer, successfulConfirmation }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [textModal, setTextModal] = useState('')
-  const [timer, setTimer] = useState({ minutes: 10 })
+  const [configModal, setConfigModal] = useState({ textModal: '', textButton: '' })
+  const [timer, setTimer] = useState({ minutes: timeOnTimer })
   const [isTimerStart, setIsTimerStart] = useState(true)
-  const [correctCode, setCorrectCode] = useState(false)
+  const [isCorrectCode, setIsCorrectCode] = useState(false)
   const [form] = Form.useForm<FieldsType>()
 
-  // useEffect(() => {
-  //   console.log(timer)
-  // }, [timer])
-
-  const handleButton = () => {
-    if (correctCode) {
-      console.log('Успех!')
+  const handleButton = useCallback(() => {
+    if (isCorrectCode) {
+      successfulConfirmation()
     } else {
       setIsModalOpen(false)
-      setTimer({ minutes: 10 })
+      setTimer({ minutes: timeOnTimer })
       setIsTimerStart(true)
       form.resetFields()
     }
-  }
+  }, [isCorrectCode, form, timeOnTimer])
 
-  const openModal = () => {
+  const openModal = useCallback((textModal: string, textButton: string) => {
     setIsModalOpen(true)
     setIsTimerStart(false)
-  }
+    setConfigModal({ textModal, textButton })
+  }, [])
 
   return (
     <>
-      <Card hidden={correctCode} className='payment' extra={<PaymentTimer isTimerStart={isTimerStart} timerStartTime={timer} setIsModalOpen={setIsModalOpen} setTextModal={setTextModal} />} title={<Title className='title'>Подтверждение оплаты</Title>} bordered={true}>
+      <Card hidden={isCorrectCode} className='payment' extra={<PaymentTimer isTimerStart={isTimerStart} timerStartTime={timer} openModal={openModal} />} title={<Title className='title'>Подтверждение оплаты</Title>} bordered={true}>
         <Title className='payment__title'>Тестовый банк</Title>
-        <PaymentForm form={form} setTextModal={setTextModal} openModal={openModal} setCorrectCode={setCorrectCode} />
+        <PaymentForm form={form} openModal={openModal} setIsCorrectCode={setIsCorrectCode} />
       </Card>
-      <PaymentModal isModalOpen={isModalOpen} handleRepeatForm={handleButton} textModal={textModal} />
+      <PaymentModal isModalOpen={isModalOpen} handleButton={handleButton} configModal={configModal} />
     </>
   )
-}
+})
 
 export default Payment

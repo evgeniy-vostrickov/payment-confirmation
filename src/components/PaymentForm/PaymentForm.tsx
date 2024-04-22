@@ -1,32 +1,35 @@
-import React, { useState } from 'react'
+import React, { memo, useContext, useState } from 'react'
 import type { FormProps } from 'antd'
 import { Button, Checkbox, Form, Input } from 'antd'
 import type { CheckboxProps } from 'antd'
 import { FieldsType, TPaymentForm } from '../types/TPaymentForm'
+import { CorrectCodeContext } from '../../App'
 
-const PaymentForm: React.FC<TPaymentForm> = ({ form, setTextModal, openModal, setCorrectCode }) => {
+const PaymentForm: React.FC<TPaymentForm> = memo(({ form, openModal, setIsCorrectCode }) => {
+  const correctCode = useContext(CorrectCodeContext)
   const [isinputEmail, setIsinputEmail] = useState(false)
+  
   const onFinish: FormProps<FieldsType>['onFinish'] = (dataForm) => {
-    // Запрос на сервер
-    if (dataForm.code === '5432') {
-      setTextModal('Данные успешно отправлены!')
-      openModal()
-      setCorrectCode(true)
+    // Должен быть запрос на сервер
+    if (dataForm.code === correctCode) {
+      openModal('Код успешно подтвержден!', 'Далее')
+      setIsCorrectCode(true)
     } else {
-      setTextModal('Некорректный СМС-код!')
-      openModal()
+      openModal('Неправильный СМС-код!', 'Попробовать снова')
     }
-    console.log('Success:', dataForm)
+    // console.log('Валидные данные:', dataForm)
   }
 
   const onFinishFailed: FormProps<FieldsType>['onFinishFailed'] = (errorInfo) => {
-    setTextModal('Некорректный ввод даннх!')
-    openModal()
-    console.log('Failed:', errorInfo)
+    openModal('Некорректный ввод даннх!', 'Попробовать снова')
+    // console.log('Невалидные данные:', errorInfo)
   }
 
   const onChangeCheckbox: CheckboxProps['onChange'] = (event) => {
     setIsinputEmail(event.target.checked)
+    if (isinputEmail) {
+      form.setFieldsValue({ email: '' })
+    }
   }
 
   return (
@@ -37,6 +40,9 @@ const PaymentForm: React.FC<TPaymentForm> = ({ form, setTextModal, openModal, se
       wrapperCol={{ md: { span: 15, offset: 1 }, sm: { span: 13, offset: 1 } }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
+      initialValues={{
+        isEmail: isinputEmail
+      }}
       autoComplete="off"
       className='payment__form'
     >
@@ -73,6 +79,6 @@ const PaymentForm: React.FC<TPaymentForm> = ({ form, setTextModal, openModal, se
       </Form.Item>
     </Form>
   )
-}
+})
 
 export default PaymentForm
