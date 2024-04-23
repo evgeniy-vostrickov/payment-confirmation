@@ -4,11 +4,11 @@ import PaymentForm from '../PaymentForm/PaymentForm'
 import PaymentTimer from '../PaymentForm/PaymentTimer'
 import PaymentModal from '../PaymentForm/PaymentModal'
 import { FieldsType } from '../types/TPaymentForm'
-import { IPayment } from '../types/IPayment'
+import { TPayment } from '../types/TPayment'
 
 const { Title } = Typography
 
-const Payment: React.FC<IPayment> = memo(({ timeOnTimer, successfulConfirmation }) => {
+const Payment: React.FC<TPayment> = memo(({ timeOnTimer, successfulConfirmation }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [configModal, setConfigModal] = useState({ textModal: '', textButton: '' })
   const [timer, setTimer] = useState({ minutes: timeOnTimer })
@@ -25,7 +25,7 @@ const Payment: React.FC<IPayment> = memo(({ timeOnTimer, successfulConfirmation 
       setIsTimerStart(true)
       form.resetFields()
     }
-  }, [isCorrectCode, form, timeOnTimer])
+  }, [isCorrectCode, form, timeOnTimer, successfulConfirmation])
 
   const openModal = useCallback((textModal: string, textButton: string) => {
     setIsModalOpen(true)

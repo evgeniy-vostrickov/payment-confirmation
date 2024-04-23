@@ -1,9 +1,10 @@
 import React, { memo, useContext, useState } from 'react'
 import type { FormProps } from 'antd'
-import { Button, Checkbox, Form, Input } from 'antd'
+import { Checkbox, Form, Input } from 'antd'
 import type { CheckboxProps } from 'antd'
 import { FieldsType, TPaymentForm } from '../types/TPaymentForm'
 import { CorrectCodeContext } from '../../App'
+import SubmitButton from './SubmitButton'
 
 const PaymentForm: React.FC<TPaymentForm> = memo(({ form, openModal, setIsCorrectCode }) => {
   const correctCode = useContext(CorrectCodeContext)
@@ -27,8 +28,10 @@ const PaymentForm: React.FC<TPaymentForm> = memo(({ form, openModal, setIsCorrec
 
   const onChangeCheckbox: CheckboxProps['onChange'] = (event) => {
     setIsinputEmail(event.target.checked)
-    if (isinputEmail) {
-      form.setFieldsValue({ email: '' })
+
+    const currentEmail = form.getFieldValue('email')
+    if (isinputEmail && currentEmail) {
+      form.setFieldsValue({ email: undefined })
     }
   }
 
@@ -69,13 +72,11 @@ const PaymentForm: React.FC<TPaymentForm> = memo(({ form, openModal, setIsCorrec
         rules={[{ required: isinputEmail, type: 'email', message: 'Пожалуйста введите email!' }]}
         hasFeedback
       >
-        <Input />
+        <Input placeholder="Введите email" />
       </Form.Item>
 
       <Form.Item className='payment__button'>
-        <Button type="primary" className='payment__button__text' htmlType="submit">
-          Отправить
-        </Button>
+        <SubmitButton form={form}>Отправить</SubmitButton>
       </Form.Item>
     </Form>
   )

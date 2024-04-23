@@ -1,4 +1,4 @@
-export interface IPayment {
+export interface TPayment {
   timeOnTimer: number
   successfulConfirmation: () => void
 }
