@@ -1,4 +1,4 @@
-import React, { memo, useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import type { FormProps } from 'antd'
 import { Checkbox, Form, Input } from 'antd'
 import type { CheckboxProps } from 'antd'
@@ -6,10 +6,13 @@ import { FieldsType, TPaymentForm } from '../types/TPaymentForm'
 import { CorrectCodeContext } from '../../App'
 import SubmitButton from './SubmitButton'
 
-const PaymentForm: React.FC<TPaymentForm> = memo(({ form, openModal, setIsCorrectCode }) => {
+const PaymentForm: React.FC<TPaymentForm> = ({ openModal, setIsCorrectCode, isResetForm, cancelIsResetForm }) => {
   const correctCode = useContext(CorrectCodeContext)
   const [isinputEmail, setIsinputEmail] = useState(false)
-  
+  const [isSubmittable, setIsSubmittable] = useState<boolean>(false)
+  const [form] = Form.useForm<FieldsType>()
+  const values = Form.useWatch([], form)
+
   const onFinish: FormProps<FieldsType>['onFinish'] = (dataForm) => {
     // Должен быть запрос на сервер
     if (dataForm.code === correctCode) {
@@ -35,6 +38,33 @@ const PaymentForm: React.FC<TPaymentForm> = memo(({ form, openModal, setIsCorrec
     }
   }
 
+  const onInputCode = (event: any) => {
+    const value = event.target.value
+    const isCodeValidating = form.isFieldValidating('code')
+    if (isCodeValidating)
+      setIsSubmittable(true)
+    else if (!value) {
+      setIsSubmittable(false)
+    }
+  }
+
+  useEffect(() => {
+    form.validateFields({ validateOnly: true })
+      .then(() => {
+        setIsSubmittable(true)
+      })
+      .catch(() => {
+        setIsSubmittable(false)
+      })
+  }, [values])
+
+  useEffect(() => {
+    if (isResetForm) {
+      form.resetFields()
+      cancelIsResetForm()
+    }
+  }, [isResetForm])
+
   return (
     <Form
       name="basic"
@@ -54,7 +84,7 @@ const PaymentForm: React.FC<TPaymentForm> = memo(({ form, openModal, setIsCorrec
         label="Код подтверждения"
         rules={[{ required: true, message: 'Код содержит 4 цифры!' }, { pattern: new RegExp('^\\d+$'), message: 'Код содержит только цифры!' }]}
       >
-        <Input.OTP length={4} size={'large'} variant={'filled'} />
+        <Input.OTP length={4} size={'large'} variant={'filled'} onInput={onInputCode} />
       </Form.Item>
 
       <Form.Item<FieldsType>
@@ -76,10 +106,10 @@ const PaymentForm: React.FC<TPaymentForm> = memo(({ form, openModal, setIsCorrec
       </Form.Item>
 
       <Form.Item className='payment__button'>
-        <SubmitButton form={form}>Отправить</SubmitButton>
+        <SubmitButton isSubmittable={isSubmittable}>Отправить</SubmitButton>
       </Form.Item>
     </Form>
   )
-})
+}
 
 export default PaymentForm

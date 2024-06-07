@@ -1,5 +1,5 @@
 export interface TPaymentTimer {
-  openModal: (textModal: string, textButton: string) => void
+  onTimerEnded: () => void
   timerStartTime: { minutes: number }
   isTimerStart: boolean
 }
